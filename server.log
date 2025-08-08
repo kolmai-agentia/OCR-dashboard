@@ -1,0 +1,46 @@
+
+> dashboard@0.1.0 dev
+> next dev --port 3000
+
+   ▲ Next.js 15.4.5
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.68.60:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1196ms
+ ○ Compiling / ...
+ ✓ Compiled / in 645ms (793 modules)
+(node:61278) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ GET / 200 in 866ms
+ ○ Compiling /costs ...
+ ✓ Compiled /costs in 812ms (2170 modules)
+ GET /costs 200 in 909ms
+ GET /costs 200 in 10ms
+ ✓ Compiled /documents in 326ms (2187 modules)
+ GET /documents 200 in 387ms
+ ✓ Compiled /companies in 284ms (2202 modules)
+ GET /companies 200 in 316ms
+ GET / 200 in 45ms
+ GET / 200 in 249ms
+ GET /costs 200 in 31ms
+ GET /costs 200 in 149ms
+ GET / 200 in 39ms
+ ✓ Compiled /favicon.ico in 415ms (1208 modules)
+ GET /costs 200 in 64ms
+ GET / 200 in 33ms
+ GET /costs 200 in 20ms
+ ✓ Compiled in 777ms (2209 modules)
+ GET /costs 200 in 129ms
+ ✓ Compiled in 504ms (2211 modules)
+ GET /costs 200 in 44ms
+ GET / 200 in 42ms
+ GET /costs 200 in 20ms
+ GET / 200 in 12ms
+ GET /costs 200 in 29ms
+ GET /costs 200 in 148ms
+ GET / 200 in 12ms
+ ✓ Compiled in 276ms (1018 modules)
+ GET / 200 in 11ms
+[?25h
