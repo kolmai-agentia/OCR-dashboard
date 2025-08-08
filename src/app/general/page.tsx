@@ -10,6 +10,7 @@ interface DocumentWithCompanies {
   status: string
   created_at: string
   document_date?: string
+  source?: 'historical' | 'new'
   companies: {
     expedidor?: any
     destinatario?: any
@@ -120,6 +121,7 @@ export default function DocumentOverviewPage() {
           status: doc.status || doc.estado || doc.processing_status || 'completed',
           created_at: doc.created_at,
           document_date: doc.document_date || doc.fecha_documento || doc.date || null,
+          source: doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new'),
           companies,
           ...doc
         }
@@ -197,10 +199,21 @@ export default function DocumentOverviewPage() {
           <div key={document.id} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
                   <FileText className="h-6 w-6 text-blue-600" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{document.filename}</h3>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900">{document.filename}</h3>
+                      {document.source && (
+                        <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                          document.source === 'historical' 
+                            ? 'bg-amber-100 text-amber-800' 
+                            : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {document.source === 'historical' ? 'Historical' : 'New'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-700">
                       Document: {document.document_date ? 
                         new Date(document.document_date).toLocaleDateString() : 

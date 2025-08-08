@@ -10,11 +10,19 @@ interface TableInfo {
   table_type: string
 }
 
+interface RecentDocument {
+  id: string
+  filename: string
+  source?: 'historical' | 'new'
+  created_at: string
+}
+
 export default function Dashboard() {
   const [tables, setTables] = useState<TableInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [latestApiError, setLatestApiError] = useState<any>(null)
+  const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([])
 
   useEffect(() => {
     async function fetchData() {
@@ -109,6 +117,27 @@ export default function Dashboard() {
         } catch (err) {
           console.log('No API errors found in recent documents')
         }
+
+        // Fetch recent documents
+        try {
+          const { data: recentDocs, error: recentError } = await supabase
+            .from('cmr_documents')
+            .select('id, filename, created_at, source, fuente, origen, is_historical')
+            .order('created_at', { ascending: false })
+            .limit(5)
+            
+          if (!recentError && recentDocs) {
+            const processedDocs = recentDocs.map((doc: any) => ({
+              id: doc.id,
+              filename: doc.filename || 'Unknown Document',
+              source: doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new'),
+              created_at: doc.created_at
+            }))
+            setRecentDocuments(processedDocs)
+          }
+        } catch (err) {
+          console.log('Could not fetch recent documents')
+        }
       } catch (err) {
         console.error('Data fetch failed:', err)
         setError(`Unable to fetch data: ${String(err)}`)
@@ -196,6 +225,44 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {recentDocuments.length > 0 && (
+        <div className="mb-8 bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Recent Documents</h2>
+          </div>
+          <div className="p-6">
+            <div className="space-y-3">
+              {recentDocuments.map((doc) => (
+                <Link 
+                  key={doc.id}
+                  href="/documents" 
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">{doc.filename}</p>
+                      <p className="text-sm text-gray-600">
+                        {new Date(doc.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  {doc.source && (
+                    <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                      doc.source === 'historical' 
+                        ? 'bg-amber-100 text-amber-800' 
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {doc.source === 'historical' ? 'Historical' : 'New'}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow">
