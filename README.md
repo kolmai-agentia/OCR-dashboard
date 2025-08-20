@@ -11,8 +11,8 @@ A Next.js dashboard for monitoring OCR document processing with password protect
 
 2. **Configure environment**
    ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your Supabase credentials
+   cp .env.example .env
+   # Edit .env with your Supabase credentials
    ```
 
 3. **Run development server**
