@@ -91,6 +91,7 @@ export default function DocumentOverviewPage() {
         // Continue without relationships data
       }
 
+
       // Process the data to combine documents with their companies
       const enhancedDocuments = documentsData.map((doc: DocumentData) => {
         const companies: {
@@ -105,18 +106,24 @@ export default function DocumentOverviewPage() {
 
         // Find relationships for this document
         if (relationshipsData && relationshipsData.length > 0) {
-          const docRelationship = (relationshipsData as DocumentWithRelatedCompanies[]).find(
+          const docRelationship = (relationshipsData as unknown as DocumentWithRelatedCompanies[]).find(
             (rel) => rel.document_id === doc.id
           )
 
           if (docRelationship) {
-            // The companies come back as arrays from the foreign key join, take first element
-            companies.expedidor = (docRelationship.expedidor && docRelationship.expedidor.length > 0) 
-              ? docRelationship.expedidor[0] : undefined
-            companies.destinatario = (docRelationship.destinatario && docRelationship.destinatario.length > 0) 
-              ? docRelationship.destinatario[0] : undefined
-            companies.transportista = (docRelationship.transportista && docRelationship.transportista.length > 0) 
-              ? docRelationship.transportista[0] : undefined
+            
+            // Handle companies that can come back as arrays or objects
+            const getCompany = (company: Company[] | Company | null | undefined): Company | undefined => {
+              if (!company) return undefined
+              if (Array.isArray(company)) {
+                return company.length > 0 ? company[0] : undefined
+              }
+              return company
+            }
+
+            companies.expedidor = getCompany(docRelationship.expedidor)
+            companies.destinatario = getCompany(docRelationship.destinatario)
+            companies.transportista = getCompany(docRelationship.transportista)
           }
         }
 
