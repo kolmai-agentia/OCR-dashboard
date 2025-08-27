@@ -45,12 +45,12 @@ export interface DocumentCompanies {
   transportista_id?: string
 }
 
-// For Supabase joins - companies come back as objects from foreign key joins
+// For Supabase joins - companies come back as arrays from foreign key joins
 export interface DocumentWithRelatedCompanies {
   document_id: string
-  expedidor?: Company | null
-  destinatario?: Company | null
-  transportista?: Company | null
+  expedidor?: Company[]
+  destinatario?: Company[]
+  transportista?: Company[]
 }
 
 // Error document interface
