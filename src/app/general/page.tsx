@@ -11,7 +11,7 @@ interface DocumentWithCompanies {
   status: string
   created_at: string
   document_date?: string | null
-  source?: 'historical' | 'new'
+  source?: string
   companies: {
     expedidor?: Company
     destinatario?: Company
@@ -133,7 +133,7 @@ export default function DocumentOverviewPage() {
           status: doc.status || doc.estado || doc.processing_status || 'completed',
           created_at: doc.created_at || doc.Created_At || new Date().toISOString(),
           document_date: doc.document_date || doc.fecha_documento || doc.date || null,
-          source: (doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new')) as 'historical' | 'new',
+          source: doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new'),
           companies
         }
       })
@@ -170,6 +170,7 @@ export default function DocumentOverviewPage() {
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
+
 
   if (loading) {
     return (
@@ -215,12 +216,8 @@ export default function DocumentOverviewPage() {
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold text-gray-900">{document.filename}</h3>
                       {document.source && (
-                        <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
-                          document.source === 'historical' 
-                            ? 'bg-amber-100 text-amber-800' 
-                            : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {document.source === 'historical' ? 'Historical' : 'New'}
+                        <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800 max-w-xs truncate" title={document.source}>
+                          {document.source}
                         </span>
                       )}
                     </div>

@@ -16,7 +16,7 @@ interface DocumentDisplay {
   created_at: string
   processed_at?: string
   document_date?: string
-  source?: 'historical' | 'new'
+  source?: string
 }
 
 export default function DocumentsPage() {
@@ -82,7 +82,7 @@ export default function DocumentsPage() {
             created_at: item.created_at || item.Created_At || new Date().toISOString(),
             processed_at: (item.processed_at || item.procesado_en || item.created_at || new Date().toISOString()) as string,
             document_date: item.document_date || item.fecha_documento || item.date || undefined,
-            source: (item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new') as 'historical' | 'new'
+            source: item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new'
           }
           return processedItem
         })
@@ -140,6 +140,7 @@ export default function DocumentsPage() {
         return 'bg-gray-100 text-gray-800'
     }
   }
+
 
   if (loading) {
     return (
@@ -221,12 +222,8 @@ export default function DocumentsPage() {
                             {document.filename || 'Unnamed Document'}
                           </h3>
                           {document.source && (
-                            <span className={`ml-auto px-2 py-0.5 text-xs font-medium rounded-full ${
-                              document.source === 'historical' 
-                                ? 'bg-amber-100 text-amber-800' 
-                                : 'bg-emerald-100 text-emerald-800'
-                            }`}>
-                              {document.source === 'historical' ? 'Historical' : 'New'}
+                            <span className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800 max-w-xs truncate" title={document.source}>
+                              {document.source}
                             </span>
                           )}
                         </div>
@@ -332,8 +329,8 @@ export default function DocumentsPage() {
                       <FileText className="h-5 w-5 text-gray-600" />
                       <div>
                         <p className="font-medium text-gray-700">Source</p>
-                        <p className="text-gray-600">
-                          {selectedDocument.source === 'historical' ? 'Historical Document' : 'New Document'}
+                        <p className="text-gray-600 break-words" title={selectedDocument.source}>
+                          {selectedDocument.source}
                         </p>
                       </div>
                     </div>
