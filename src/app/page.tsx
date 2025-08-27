@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { ApiErrorDocument, DocumentData } from '@/types/database'
 import { Building2, FileText, DollarSign, Activity, AlertCircle, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -10,7 +11,7 @@ interface TableInfo {
   table_type: string
 }
 
-interface RecentDocument {
+interface DashboardRecentDoc {
   id: string
   filename: string
   source?: 'historical' | 'new'
@@ -21,8 +22,8 @@ export default function Dashboard() {
   const [tables, setTables] = useState<TableInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [latestApiError, setLatestApiError] = useState<any>(null)
-  const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([])
+  const [latestApiError, setLatestApiError] = useState<ApiErrorDocument | null>(null)
+  const [recentDocuments, setRecentDocuments] = useState<DashboardRecentDoc[]>([])
 
   useEffect(() => {
     async function fetchData() {
@@ -114,7 +115,7 @@ export default function Dashboard() {
           if (!docError && latestDoc && latestDoc.api_details && Object.keys(latestDoc.api_details).length > 0) {
             setLatestApiError(latestDoc)
           }
-        } catch (err) {
+        } catch {
           console.log('No API errors found in recent documents')
         }
 
@@ -122,20 +123,20 @@ export default function Dashboard() {
         try {
           const { data: recentDocs, error: recentError } = await supabase
             .from('cmr_documents')
-            .select('id, filename, created_at, source, fuente, origen, is_historical')
+            .select('*')
             .order('created_at', { ascending: false })
             .limit(5)
             
           if (!recentError && recentDocs) {
-            const processedDocs = recentDocs.map((doc: any) => ({
+            const processedDocs = recentDocs.map((doc: DocumentData): DashboardRecentDoc => ({
               id: doc.id,
               filename: doc.filename || 'Unknown Document',
-              source: doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new'),
-              created_at: doc.created_at
+              source: (doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new')) as 'historical' | 'new',
+              created_at: doc.created_at || new Date().toISOString()
             }))
             setRecentDocuments(processedDocs)
           }
-        } catch (err) {
+        } catch {
           console.log('Could not fetch recent documents')
         }
       } catch (err) {

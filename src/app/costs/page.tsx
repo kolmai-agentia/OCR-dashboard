@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { DocumentData } from '@/types/database'
 import { DollarSign, TrendingUp, Calendar, Target, FileText, AlertTriangle, X } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { format } from 'date-fns'
@@ -20,8 +21,8 @@ export default function CostsPage() {
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState('30')
   const [documentsProcessed, setDocumentsProcessed] = useState(0)
-  const [documentsData, setDocumentsData] = useState<any[]>([])
-  const [latestApiError, setLatestApiError] = useState<any>(null)
+  const [documentsData, setDocumentsData] = useState<DocumentData[]>([])
+  const [latestApiError, setLatestApiError] = useState<{ id: string; filename?: string; api_details?: Record<string, unknown>; processing_date?: string; status?: string } | null>(null)
   const [showApiError, setShowApiError] = useState(true)
 
   const fetchApiUsages = useCallback(async () => {
@@ -52,11 +53,11 @@ export default function CostsPage() {
       // Convert documents to API usage format
       const processedData: ApiUsage[] = []
       
-      documentsData.forEach((doc: any) => {
+      documentsData.forEach((doc: DocumentData) => {
         // Extract cost and usage information from document fields
-        const geminiCost = parseFloat(doc.cost_gemini || doc.gemini_cost || doc.ocr_cost || doc.costo_gemini || 0)
-        const serpApiUsage = parseFloat(doc.unitary_usage_serpapi || 0)
-        const firecrawlUsage = parseFloat(doc.unitary_usage_firecrawl || 0)
+        const geminiCost = parseFloat(String(doc.cost_gemini || doc.gemini_cost || doc.ocr_cost || doc.costo_gemini || 0))
+        const serpApiUsage = parseFloat(String(doc.unitary_usage_serpapi || 0))
+        const firecrawlUsage = parseFloat(String(doc.unitary_usage_firecrawl || 0))
 
         // Gemini OCR - 1 usage per document
         if (geminiCost > 0 || doc.id) {  // Always count if document exists
@@ -116,7 +117,7 @@ export default function CostsPage() {
         if (!docError && latestDoc && latestDoc.api_details && Object.keys(latestDoc.api_details).length > 0) {
           setLatestApiError(latestDoc)
         }
-      } catch (err) {
+      } catch {
         console.log('No API errors found in recent documents')
       }
     } catch (error) {
@@ -157,7 +158,7 @@ export default function CostsPage() {
 
   // Show API usage counts in pie chart
   const pieData = Object.entries(requestsByApi)
-    .filter(([api, count]) => count > 0)
+    .filter(([, count]) => count > 0)
     .map(([api, count]) => ({
       name: api === 'gemini' ? 'Gemini OCR' : 
             api === 'serpapi' ? 'SerpAPI' : 

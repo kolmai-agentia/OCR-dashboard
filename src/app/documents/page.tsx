@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { DocumentData } from '@/types/database'
 import { FileText, Search, Eye, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 
-interface Document {
+interface DocumentDisplay {
   id: string
   filename: string
   file_path?: string
@@ -19,12 +20,12 @@ interface Document {
 }
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<Document[]>([])
+  const [documents, setDocuments] = useState<DocumentDisplay[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [sourceFilter, setSourceFilter] = useState<string>('all')
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
+  const [selectedDocument, setSelectedDocument] = useState<DocumentDisplay | null>(null)
 
   useEffect(() => {
     fetchDocuments()
@@ -70,19 +71,21 @@ export default function DocumentsPage() {
 
       if (documentsData.length > 0) {
         // Process the documents to match expected structure
-        const processedData = documentsData.map((item: any, index: number) => ({
-          id: item.id || item.ID || index.toString(),
-          filename: item.filename || item.nombre_archivo || item.file_name || item.documento || 'Unknown Document',
-          file_path: item.file_path || item.ruta_archivo || item.path || '',
-          processing_status: item.processing_status || item.estado || item.status || 'completed',
-          ocr_confidence: item.ocr_confidence || item.confianza || item.confidence || null,
-          extracted_text: item.extracted_text || item.texto_extraido || item.text || '',
-          created_at: item.created_at || item.Created_At || new Date().toISOString(),
-          processed_at: item.processed_at || item.procesado_en || item.created_at || new Date().toISOString(),
-          document_date: item.document_date || item.fecha_documento || item.date || null,
-          source: item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new'),
-          ...item // Include all original fields
-        }))
+        const processedData = documentsData.map((item: DocumentData, index: number) => {
+          const processedItem: DocumentDisplay = {
+            id: item.id || (item.ID as string | undefined) || index.toString(),
+            filename: item.filename || item.nombre_archivo || item.file_name || item.documento || 'Unknown Document',
+            file_path: item.file_path || item.ruta_archivo || item.path || '',
+            processing_status: (item.processing_status || item.estado || item.status || 'completed') as 'pending' | 'processing' | 'completed' | 'failed' | 'low_quality',
+            ocr_confidence: item.ocr_confidence || item.confianza || item.confidence || undefined,
+            extracted_text: item.extracted_text || item.texto_extraido || item.text || '',
+            created_at: item.created_at || item.Created_At || new Date().toISOString(),
+            processed_at: (item.processed_at || item.procesado_en || item.created_at || new Date().toISOString()) as string,
+            document_date: item.document_date || item.fecha_documento || item.date || undefined,
+            source: (item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new') as 'historical' | 'new'
+          }
+          return processedItem
+        })
         setDocuments(processedData)
         console.log(`Processed ${processedData.length} documents from ${foundTable}`)
       } else {

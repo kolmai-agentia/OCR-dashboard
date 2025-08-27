@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { DocumentData, Company, DocumentWithRelatedCompanies } from '@/types/database'
 import { FileText, Building2, User, Truck, Package, Search } from 'lucide-react'
 
 interface DocumentWithCompanies {
@@ -9,14 +10,14 @@ interface DocumentWithCompanies {
   filename: string
   status: string
   created_at: string
-  document_date?: string
+  document_date?: string | null
   source?: 'historical' | 'new'
   companies: {
-    expedidor?: any
-    destinatario?: any
-    transportista?: any
+    expedidor?: Company
+    destinatario?: Company
+    transportista?: Company
   }
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export default function DocumentOverviewPage() {
@@ -93,8 +94,12 @@ export default function DocumentOverviewPage() {
       }
 
       // Process the data to combine documents with their companies
-      const enhancedDocuments = documentsData.map((doc: any) => {
-        const companies = {
+      const enhancedDocuments = documentsData.map((doc: DocumentData) => {
+        const companies: {
+          expedidor?: Company
+          destinatario?: Company
+          transportista?: Company
+        } = {
           expedidor: undefined,
           destinatario: undefined,
           transportista: undefined
@@ -102,28 +107,27 @@ export default function DocumentOverviewPage() {
 
         // Find relationships for this document
         if (relationshipsData) {
-          const docRelationship = relationshipsData.find(
-            (rel: any) => rel.document_id === doc.id
+          const docRelationship = (relationshipsData as DocumentWithRelatedCompanies[]).find(
+            (rel) => rel.document_id === doc.id
           )
 
           console.log(`Document ${doc.id} relationship:`, docRelationship)
 
           if (docRelationship) {
-            companies.expedidor = docRelationship.expedidor
-            companies.destinatario = docRelationship.destinatario
-            companies.transportista = docRelationship.transportista
+            companies.expedidor = Array.isArray(docRelationship.expedidor) ? docRelationship.expedidor[0] : undefined
+            companies.destinatario = Array.isArray(docRelationship.destinatario) ? docRelationship.destinatario[0] : undefined
+            companies.transportista = Array.isArray(docRelationship.transportista) ? docRelationship.transportista[0] : undefined
           }
         }
 
         return {
           id: doc.id,
-          filename: doc.filename || doc.nombre_archivo || doc.document_name || 'Unknown Document',
+          filename: doc.filename || doc.nombre_archivo || 'Unknown Document',
           status: doc.status || doc.estado || doc.processing_status || 'completed',
-          created_at: doc.created_at,
+          created_at: doc.created_at || doc.Created_At || new Date().toISOString(),
           document_date: doc.document_date || doc.fecha_documento || doc.date || null,
-          source: doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new'),
-          companies,
-          ...doc
+          source: (doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new')) as 'historical' | 'new',
+          companies
         }
       })
 
@@ -242,7 +246,7 @@ export default function DocumentOverviewPage() {
                       {company ? (
                         <div>
                           <p className="font-semibold text-gray-900 mb-1">
-                            {company.empresa || company.name || 'Unknown Company'}
+                            {company.empresa || 'Unknown Company'}
                           </p>
                           {company.direccion && (
                             <p className="text-sm text-gray-700 mb-1">{company.direccion}</p>
@@ -250,8 +254,8 @@ export default function DocumentOverviewPage() {
                           {company.telefono && (
                             <p className="text-sm text-gray-600">📞 {company.telefono}</p>
                           )}
-                          {company.web && (
-                            <p className="text-sm text-gray-600">🌐 {company.web}</p>
+                          {company.website && (
+                            <p className="text-sm text-gray-600">🌐 {company.website}</p>
                           )}
                           {company.vehiculo && (
                             <p className="text-sm text-gray-600">🚛 {company.vehiculo}</p>

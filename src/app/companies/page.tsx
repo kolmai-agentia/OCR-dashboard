@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Building2, Search, Filter, Eye, Mail, Phone, Globe, FileText } from 'lucide-react'
+import { Building2, Search, Eye, Mail, Phone, Globe, FileText } from 'lucide-react'
+import type { CompanyData } from '@/types/database'
 
-interface Company {
+interface CompanyDisplay {
   id: string
   name: string
   address?: string
@@ -15,13 +16,15 @@ interface Company {
   website?: string
   tax_id?: string
   created_at: string
+  role?: string
+  [key: string]: unknown
 }
 
 export default function CompaniesPage() {
-  const [companies, setCompanies] = useState<Company[]>([])
+  const [companies, setCompanies] = useState<CompanyDisplay[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
+  const [selectedCompany, setSelectedCompany] = useState<CompanyDisplay | null>(null)
   const [roleFilter, setRoleFilter] = useState('all')
 
   useEffect(() => {
@@ -42,20 +45,28 @@ export default function CompaniesPage() {
       } else {
         console.log('Companies data fetched successfully:', data)
         // Convert any data structure to our expected format
-        const processedData = (data || []).map((item: any, index: number) => ({
-          id: item.id || item.ID || index.toString(),
-          name: item.empresa || item.name || item.Name || item.company_name || item.nombre || 'Unknown Company',
-          address: item.direccion || item.address || item.Address || '',
-          city: item.ciudad || item.city || item.City || '',
-          country: item.pais || item.country || item.Country || '',
-          phone: item.telefono || item.phone || item.Phone || '',
-          email: item.correo || item.email || item.Email || '',
-          website: item.web || item.website || item.Website || '',
-          tax_id: item.tax_id || item.taxId || item.tax_number || item.nif || item.cif || item.vat_number || item.fiscal_id || '',
-          role: item.role || '',
-          created_at: item.created_at || item.Created_At || new Date().toISOString(),
-          ...item // Include all original fields
-        }))
+        const processedData = (data || []).map((item: CompanyData, index: number) => {
+          const processedItem: CompanyDisplay = {
+            id: item.id || (item.ID as string | undefined) || index.toString(),
+            name: item.empresa || item.name || item.Name || item.company_name || item.nombre || 'Unknown Company',
+            address: item.direccion || item.address || item.Address || '',
+            city: item.ciudad || item.city || item.City || '',
+            country: item.pais || item.country || item.Country || '',
+            phone: item.telefono || item.phone || item.Phone || '',
+            email: item.correo || item.email || item.Email || '',
+            website: item.web || item.website || item.Website || '',
+            tax_id: item.tax_id || item.taxId || item.tax_number || item.nif || item.cif || item.vat_number || item.fiscal_id || '',
+            role: (item.role as string) || '',
+            created_at: item.created_at || item.Created_At || new Date().toISOString()
+          }
+          // Add additional properties from original item
+          Object.keys(item).forEach(key => {
+            if (!(key in processedItem)) {
+              (processedItem as Record<string, unknown>)[key] = item[key]
+            }
+          })
+          return processedItem
+        })
         setCompanies(processedData)
       }
     } catch (error) {
@@ -264,20 +275,20 @@ export default function CompaniesPage() {
                     </div>
                   )}
 
-                  {selectedCompany.role === 'transportista' && (selectedCompany.vehiculo || selectedCompany.tipo_camion) && (
+                  {selectedCompany.role === 'transportista' && (selectedCompany['vehiculo'] || selectedCompany['tipo_camion']) ? (
                     <div className="flex items-start gap-3">
                       <Eye className="h-5 w-5 text-gray-600 mt-0.5" />
                       <div>
                         <p className="font-medium text-gray-700">Vehicle Information</p>
-                        {selectedCompany.vehiculo && (
-                          <p className="text-gray-600">Vehicle: {selectedCompany.vehiculo}</p>
-                        )}
-                        {selectedCompany.tipo_camion && (
-                          <p className="text-gray-600">Truck Type: {selectedCompany.tipo_camion}</p>
-                        )}
+                        {selectedCompany['vehiculo'] ? (
+                          <p className="text-gray-600">Vehicle: {selectedCompany['vehiculo'] as string}</p>
+                        ) : null}
+                        {selectedCompany['tipo_camion'] ? (
+                          <p className="text-gray-600">Truck Type: {selectedCompany['tipo_camion'] as string}</p>
+                        ) : null}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="pt-4 border-t border-gray-200">
