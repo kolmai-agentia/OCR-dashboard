@@ -31,10 +31,11 @@ export default function DocumentOverviewPage() {
 
   const fetchDocumentOverview = async () => {
     try {
-      // First, let's try a simpler approach - get documents first
+      // Get only completed documents
       const { data: documentsData, error: docsError } = await supabase
         .from('cmr_documents')
         .select('*')
+        .eq('status', 'completed')
         .order('created_at', { ascending: false })
 
       if (docsError) {
