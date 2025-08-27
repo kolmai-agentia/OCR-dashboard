@@ -48,6 +48,19 @@ export default function DocumentOverviewPage() {
         return
       }
 
+      console.log('📄 Found documents:', documentsData.length, documentsData.map(d => ({ id: d.id, filename: d.filename })))
+
+      // First, let's check if document_companies table has any data
+      const { data: dcCheck, error: dcError } = await supabase
+        .from('document_companies')
+        .select('*')
+      
+      console.log('🔗 Document-companies table check:', {
+        error: dcError,
+        count: dcCheck?.length || 0,
+        data: dcCheck?.slice(0, 3) // First 3 rows for debugging
+      })
+
       // Get document-company relationships with companies joined
       const { data: relationshipsData, error: relError } = await supabase
         .from('document_companies')
@@ -85,11 +98,14 @@ export default function DocumentOverviewPage() {
           )
         `)
 
-      console.log('Documents data:', documentsData)
-      console.log('Relationships data:', relationshipsData)
+      console.log('🏢 Relationships query result:', {
+        error: relError,
+        count: relationshipsData?.length || 0,
+        data: relationshipsData?.slice(0, 2) // First 2 relationships for debugging
+      })
 
       if (relError) {
-        console.error('Error fetching relationships:', relError)
+        console.error('❌ Error fetching relationships:', relError)
         // Continue without relationships data
       }
 
@@ -106,18 +122,27 @@ export default function DocumentOverviewPage() {
         }
 
         // Find relationships for this document
-        if (relationshipsData) {
+        if (relationshipsData && relationshipsData.length > 0) {
           const docRelationship = (relationshipsData as DocumentWithRelatedCompanies[]).find(
             (rel) => rel.document_id === doc.id
           )
 
-          console.log(`Document ${doc.id} relationship:`, docRelationship)
+          console.log(`🔍 Document ${doc.id} (${doc.filename}) relationship search:`, {
+            docId: doc.id,
+            foundRelationship: docRelationship,
+            totalRelationships: relationshipsData.length
+          })
 
           if (docRelationship) {
+            console.log(`✅ Found relationship for ${doc.id}:`, docRelationship)
             companies.expedidor = Array.isArray(docRelationship.expedidor) ? docRelationship.expedidor[0] : undefined
             companies.destinatario = Array.isArray(docRelationship.destinatario) ? docRelationship.destinatario[0] : undefined
             companies.transportista = Array.isArray(docRelationship.transportista) ? docRelationship.transportista[0] : undefined
+          } else {
+            console.log(`❌ No relationship found for document ${doc.id}`)
           }
+        } else {
+          console.log(`❌ No relationships data available (count: ${relationshipsData?.length || 0})`)
         }
 
         return {
