@@ -110,13 +110,10 @@ export default function DocumentOverviewPage() {
           )
 
           if (docRelationship) {
-            // The companies come back as arrays from the join, take first element
-            companies.expedidor = (docRelationship.expedidor && docRelationship.expedidor.length > 0) 
-              ? docRelationship.expedidor[0] : undefined
-            companies.destinatario = (docRelationship.destinatario && docRelationship.destinatario.length > 0) 
-              ? docRelationship.destinatario[0] : undefined
-            companies.transportista = (docRelationship.transportista && docRelationship.transportista.length > 0) 
-              ? docRelationship.transportista[0] : undefined
+            // The companies come back as objects from the foreign key join
+            companies.expedidor = docRelationship.expedidor || undefined
+            companies.destinatario = docRelationship.destinatario || undefined  
+            companies.transportista = docRelationship.transportista || undefined
           }
         }
 
