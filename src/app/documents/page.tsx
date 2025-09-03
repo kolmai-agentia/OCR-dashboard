@@ -16,7 +16,6 @@ interface DocumentDisplay {
   created_at: string
   processed_at?: string
   document_date?: string
-  source?: string
   error_message?: string
 }
 
@@ -25,7 +24,6 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [sourceFilter, setSourceFilter] = useState<string>('all')
   const [selectedDocument, setSelectedDocument] = useState<DocumentDisplay | null>(null)
 
   useEffect(() => {
@@ -83,7 +81,6 @@ export default function DocumentsPage() {
             created_at: item.created_at || item.Created_At || new Date().toISOString(),
             processed_at: (item.processed_at || item.procesado_en || item.created_at || new Date().toISOString()) as string,
             document_date: item.document_date || item.fecha_documento || item.date || undefined,
-            source: item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new',
             error_message: item.error_message || item.mensaje_error
           }
           return processedItem
@@ -105,8 +102,7 @@ export default function DocumentsPage() {
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.filename?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || doc.processing_status === statusFilter
-    const matchesSource = sourceFilter === 'all' || doc.source === sourceFilter
-    return matchesSearch && matchesStatus && matchesSource
+    return matchesSearch && matchesStatus
   })
 
   const getStatusIcon = (status: string) => {
@@ -176,15 +172,6 @@ export default function DocumentsPage() {
           />
         </div>
         <select
-          value={sourceFilter}
-          onChange={(e) => setSourceFilter(e.target.value)}
-          className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
-        >
-          <option value="all">All Sources</option>
-          <option value="historical">Historical</option>
-          <option value="new">New</option>
-        </select>
-        <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
@@ -223,11 +210,6 @@ export default function DocumentsPage() {
                           <h3 className="font-medium text-gray-900 truncate">
                             {document.filename || 'Unnamed Document'}
                           </h3>
-                          {document.source && (
-                            <span className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800 max-w-xs truncate" title={document.source}>
-                              {document.source}
-                            </span>
-                          )}
                         </div>
                         <div className="flex items-center gap-2 mb-1">
                           {getStatusIcon(document.processing_status)}
@@ -259,7 +241,7 @@ export default function DocumentsPage() {
               <div className="p-8 text-center">
                 <FileText className="h-12 w-12 text-gray-600 mx-auto mb-4" />
                 <p className="text-gray-700">
-                  {searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' ? 'No documents match your filters' : 'No documents found'}
+                  {searchTerm || statusFilter !== 'all' ? 'No documents match your filters' : 'No documents found'}
                 </p>
               </div>
             )}
@@ -277,15 +259,6 @@ export default function DocumentsPage() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <FileText className="h-6 w-6" />
                     {selectedDocument.filename || 'Unnamed Document'}
-                    {selectedDocument.source && (
-                      <span className={`ml-auto px-3 py-1 text-sm font-medium rounded-full ${
-                        selectedDocument.source === 'historical' 
-                          ? 'bg-amber-100 text-amber-800' 
-                          : 'bg-emerald-100 text-emerald-800'
-                      }`}>
-                        {selectedDocument.source === 'historical' ? 'Historical' : 'New'}
-                      </span>
-                    )}
                   </h3>
                   <p className="text-sm text-gray-700">
                     Document ID: {selectedDocument.id}
@@ -325,18 +298,6 @@ export default function DocumentsPage() {
                       </p>
                     </div>
                   </div>
-
-                  {selectedDocument.source && (
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-gray-600" />
-                      <div>
-                        <p className="font-medium text-gray-700">Source</p>
-                        <p className="text-gray-600 break-words" title={selectedDocument.source}>
-                          {selectedDocument.source}
-                        </p>
-                      </div>
-                    </div>
-                  )}
 
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-gray-600" />

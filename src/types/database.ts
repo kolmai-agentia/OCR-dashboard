@@ -9,7 +9,6 @@ export interface CmrDocument {
   error_message?: string
   processing_date?: string // timestamp
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'low_quality'
-  source: 'historical' | 'new'
   cost_gemini?: number // numeric
   api_details?: Record<string, unknown> // jsonb
   created_at?: string // timestamp
@@ -66,7 +65,6 @@ export interface ApiErrorDocument {
 export interface RecentDocument {
   id: string
   filename: string
-  source?: 'historical' | 'new'
   created_at: string
 }
 
@@ -121,9 +119,6 @@ export interface DocumentData extends CmrDocument {
   procesado_en?: string
   fecha_documento?: string
   date?: string
-  fuente?: string
-  origen?: string
-  is_historical?: boolean
   mensaje_error?: string
   gemini_cost?: number
   ocr_cost?: number

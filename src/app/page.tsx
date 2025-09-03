@@ -14,7 +14,6 @@ interface TableInfo {
 interface DashboardRecentDoc {
   id: string
   filename: string
-  source?: string
   created_at: string
 }
 
@@ -131,7 +130,6 @@ export default function Dashboard() {
             const processedDocs = recentDocs.map((doc: DocumentData): DashboardRecentDoc => ({
               id: doc.id,
               filename: doc.filename || 'Unknown Document',
-              source: doc.source || doc.fuente || doc.origen || (doc.is_historical ? 'historical' : 'new'),
               created_at: doc.created_at || new Date().toISOString()
             }))
             setRecentDocuments(processedDocs)
@@ -250,11 +248,6 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  {doc.source && (
-                    <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800 max-w-xs truncate" title={doc.source}>
-                      {doc.source}
-                    </span>
-                  )}
                 </Link>
               ))}
             </div>
