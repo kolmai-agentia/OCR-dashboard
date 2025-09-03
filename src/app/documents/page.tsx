@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { DocumentData } from '@/types/database'
-import { FileText, Search, Eye, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { FileText, Search, Eye, Calendar, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DocumentDisplay {
@@ -17,6 +17,7 @@ interface DocumentDisplay {
   processed_at?: string
   document_date?: string
   source?: string
+  error_message?: string
 }
 
 export default function DocumentsPage() {
@@ -82,7 +83,8 @@ export default function DocumentsPage() {
             created_at: item.created_at || item.Created_At || new Date().toISOString(),
             processed_at: (item.processed_at || item.procesado_en || item.created_at || new Date().toISOString()) as string,
             document_date: item.document_date || item.fecha_documento || item.date || undefined,
-            source: item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new'
+            source: item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new',
+            error_message: item.error_message || item.mensaje_error || (typeof item.error === 'string' ? item.error : undefined) || undefined
           }
           return processedItem
         })
@@ -348,6 +350,20 @@ export default function DocumentsPage() {
                       </p>
                     </div>
                   </div>
+
+                  {selectedDocument.error_message && (
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-700">Error Message</p>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-1">
+                          <p className="text-sm text-red-800 break-words">
+                            {selectedDocument.error_message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {selectedDocument.extracted_text && (
