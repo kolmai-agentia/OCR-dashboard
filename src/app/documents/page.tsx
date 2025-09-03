@@ -84,7 +84,7 @@ export default function DocumentsPage() {
             processed_at: (item.processed_at || item.procesado_en || item.created_at || new Date().toISOString()) as string,
             document_date: item.document_date || item.fecha_documento || item.date || undefined,
             source: item.source || item.fuente || item.origen || (item.is_historical ? 'historical' : 'new') || 'new',
-            error_message: item.error_message || item.mensaje_error || (typeof item.error === 'string' ? item.error : undefined) || undefined
+            error_message: item.error_message || item.mensaje_error || (typeof item.error === 'string' ? item.error : undefined)
           }
           return processedItem
         })
