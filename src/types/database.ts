@@ -124,6 +124,7 @@ export interface DocumentData extends CmrDocument {
   fuente?: string
   origen?: string
   is_historical?: boolean
+  mensaje_error?: string
   gemini_cost?: number
   ocr_cost?: number
   costo_gemini?: number
