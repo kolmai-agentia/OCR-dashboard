@@ -351,14 +351,14 @@ export default function DocumentsPage() {
                     </div>
                   </div>
 
-                  {selectedDocument.error_message && (
+                  {selectedDocument.processing_status === 'failed' && (
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
                       <div className="flex-1">
                         <p className="font-medium text-gray-700">Error Message</p>
                         <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-1">
                           <p className="text-sm text-red-800 break-words">
-                            {selectedDocument.error_message}
+                            {selectedDocument.error_message || 'No error message available'}
                           </p>
                         </div>
                       </div>
