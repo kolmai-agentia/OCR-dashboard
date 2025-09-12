@@ -96,41 +96,43 @@ export default function CompaniesPage() {
   }
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <Building2 className="h-8 w-8" />
-          Companies
-        </h1>
-        <p className="mt-2 text-gray-600">
-          View and manage company information extracted from documents
-        </p>
-      </div>
-
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
-          <input
-            type="text"
-            placeholder="Search companies by name, city, or country..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+    <div className="h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+      <div className="flex-shrink-0 pb-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Building2 className="h-8 w-8" />
+            Companies
+          </h1>
+          <p className="mt-2 text-gray-600">
+            View and manage company information extracted from documents
+          </p>
         </div>
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
-        >
-          <option value="all">All Roles</option>
-          <option value="expedidor">Expedidor</option>
-          <option value="destinatario">Destinatario</option>
-          <option value="transportista">Transportista</option>
-        </select>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
+            <input
+              type="text"
+              placeholder="Search companies by name, city, or country..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
+          >
+            <option value="all">All Roles</option>
+            <option value="expedidor">Expedidor</option>
+            <option value="destinatario">Destinatario</option>
+            <option value="transportista">Transportista</option>
+          </select>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-280px)]">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
         <div className="bg-white rounded-lg shadow flex flex-col">
           <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
             <h2 className="text-lg font-medium text-gray-900">
