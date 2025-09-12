@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 
 interface ApiUsage {
   id: string
-  api_name: 'gemini' | 'serpapi' | 'firecrawl'
+  api_name: 'gemini' | 'serpapi' | 'firecrawl' | 'openai'
   usage_type: string
   cost: number
   usage_count: number
@@ -56,6 +56,8 @@ export default function CostsPage() {
       documentsData.forEach((doc: DocumentData) => {
         // Extract cost and usage information from document fields
         const geminiCost = parseFloat(String(doc.cost_gemini || doc.gemini_cost || doc.ocr_cost || doc.costo_gemini || 0))
+        const openaiCost = parseFloat(String(doc.cost_openai || 0))
+        const openaiUsage = parseFloat(String(doc.unitary_usage_openai || 0))
         const serpApiUsage = parseFloat(String(doc.unitary_usage_serpapi || 0))
         const firecrawlUsage = parseFloat(String(doc.unitary_usage_firecrawl || 0))
 
@@ -67,6 +69,18 @@ export default function CostsPage() {
             usage_type: 'ocr_processing',
             cost: geminiCost,
             usage_count: 1,  // Always 1 per document
+            created_at: doc.created_at || new Date().toISOString()
+          })
+        }
+
+        // OpenAI - with cost and usage
+        if (openaiCost > 0 || openaiUsage > 0) {
+          processedData.push({
+            id: `${doc.id}-openai`,
+            api_name: 'openai',
+            usage_type: 'ai_processing',
+            cost: openaiCost,
+            usage_count: openaiUsage || (openaiCost > 0 ? 1 : 0),  // Default to 1 if cost exists but no usage count
             created_at: doc.created_at || new Date().toISOString()
           })
         }
@@ -161,11 +175,13 @@ export default function CostsPage() {
     .filter(([, count]) => count > 0)
     .map(([api, count]) => ({
       name: api === 'gemini' ? 'Gemini OCR' : 
+            api === 'openai' ? 'OpenAI' :
             api === 'serpapi' ? 'SerpAPI' : 
  
             api === 'firecrawl' ? 'Firecrawl' : api,
       value: count,
       color: api === 'gemini' ? '#3B82F6' : 
+             api === 'openai' ? '#F59E0B' :
              api === 'serpapi' ? '#10B981' : 
  
              api === 'firecrawl' ? '#8B5CF6' : '#6B7280'
@@ -179,6 +195,15 @@ export default function CostsPage() {
       avgCost: requestsByApi.gemini ? (costByApi.gemini || 0) / requestsByApi.gemini : 0,
       color: 'bg-blue-500',
       description: 'Document OCR processing',
+      showCost: true
+    },
+    {
+      name: 'OpenAI',
+      cost: costByApi.openai || 0,
+      requests: requestsByApi.openai || 0,
+      avgCost: requestsByApi.openai ? (costByApi.openai || 0) / requestsByApi.openai : 0,
+      color: 'bg-amber-500',
+      description: 'AI text processing',
       showCost: true
     },
     {
@@ -280,7 +305,7 @@ export default function CostsPage() {
             </div>
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">${totalCost.toFixed(2)}</h3>
-              <p className="text-sm text-gray-700">Gemini OCR Cost</p>
+              <p className="text-sm text-gray-700">Total API Cost</p>
             </div>
           </div>
         </div>
@@ -394,7 +419,7 @@ export default function CostsPage() {
           <h2 className="text-lg font-medium text-gray-900">API Usage Breakdown</h2>
         </div>
         <div className="p-6">
-          <div className={`grid grid-cols-1 ${apiStats.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-4'} gap-6`}>
+          <div className={`grid grid-cols-1 ${apiStats.length === 3 ? 'md:grid-cols-3' : apiStats.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-2'} gap-6`}>
             {apiStats.map((api) => (
               <div key={api.name} className="border rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-3">
@@ -458,6 +483,12 @@ export default function CostsPage() {
                     Gemini OCR
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    OpenAI Cost
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    OpenAI Usage
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     SerpAPI Usage
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -472,6 +503,8 @@ export default function CostsPage() {
                   const docId = fullDocId || docIdPrefix
                   const docUsages = apiUsages.filter(usage => usage.id.startsWith(docIdPrefix))
                   const geminiCost = docUsages.find(u => u.api_name === 'gemini')?.cost || 0
+                  const openaiCost = docUsages.find(u => u.api_name === 'openai')?.cost || 0
+                  const openaiUsage = docUsages.find(u => u.api_name === 'openai')?.usage_count || 0
                   const serpApiUsage = docUsages.find(u => u.api_name === 'serpapi')?.usage_count || 0
                   const firecrawlUsage = docUsages.find(u => u.api_name === 'firecrawl')?.usage_count || 0
                   const docDate = docUsages[0]?.created_at
@@ -495,6 +528,12 @@ export default function CostsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ${geminiCost.toFixed(4)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${openaiCost.toFixed(4)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {openaiUsage || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {serpApiUsage || '-'}

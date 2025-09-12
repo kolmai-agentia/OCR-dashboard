@@ -10,6 +10,8 @@ export interface CmrDocument {
   processing_date?: string // timestamp
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'low_quality'
   cost_gemini?: number // numeric
+  cost_openai?: number // numeric
+  unitary_usage_openai?: number // numeric
   api_details?: Record<string, unknown> // jsonb
   created_at?: string // timestamp
   updated_at?: string // timestamp
