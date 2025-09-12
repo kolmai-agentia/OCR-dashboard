@@ -229,7 +229,7 @@ export default function CostsPage() {
 
       <div className="mb-6">
         <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-900">Time Period:</label>
+          <label className="text-sm font-medium text-black">Time Period:</label>
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}

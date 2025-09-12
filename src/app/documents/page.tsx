@@ -174,7 +174,7 @@ export default function DocumentsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 bg-blue-50 border border-blue-300 text-gray-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
+          className="px-4 py-2 bg-blue-50 border border-blue-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
         >
           <option value="all">All Status</option>
           <option value="pending">Pending</option>

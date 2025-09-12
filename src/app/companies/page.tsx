@@ -96,7 +96,7 @@ export default function CompaniesPage() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
       <div className="flex-shrink-0 pb-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -122,7 +122,7 @@ export default function CompaniesPage() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-4 py-2 bg-blue-50 border border-blue-300 text-gray-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
+            className="px-4 py-2 bg-blue-50 border border-blue-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
           >
             <option value="all">All Roles</option>
             <option value="expedidor">Expedidor</option>
