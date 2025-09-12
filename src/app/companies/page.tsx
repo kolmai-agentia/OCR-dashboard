@@ -96,7 +96,7 @@ export default function CompaniesPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-shrink-0 pb-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
