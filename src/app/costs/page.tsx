@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { DocumentData } from '@/types/database'
-import { DollarSign, TrendingUp, Calendar, Target, FileText, AlertTriangle, X } from 'lucide-react'
+import { DollarSign, TrendingUp, Calendar, Target, FileText } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { format } from 'date-fns'
 
@@ -22,8 +22,6 @@ export default function CostsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('30')
   const [documentsProcessed, setDocumentsProcessed] = useState(0)
   const [documentsData, setDocumentsData] = useState<DocumentData[]>([])
-  const [latestApiError, setLatestApiError] = useState<{ id: string; filename?: string; api_details?: Record<string, unknown>; processing_date?: string; status?: string } | null>(null)
-  const [showApiError, setShowApiError] = useState(true)
 
   const fetchApiUsages = useCallback(async () => {
     try {
@@ -117,23 +115,6 @@ export default function CostsPage() {
       console.log(`Processed ${processedData.length} API usage records from ${documentsData.length} documents`)
       console.log('Cost breakdown:', processedData)
       
-      // Check for latest document with API errors
-      try {
-        const { data: latestDoc, error: docError } = await supabase
-          .from('cmr_documents')
-          .select('id, filename, api_details, processing_date, status')
-          .not('api_details', 'is', null)
-          .neq('api_details', '{}')
-          .order('processing_date', { ascending: false })
-          .limit(1)
-          .single()
-          
-        if (!docError && latestDoc && latestDoc.api_details && Object.keys(latestDoc.api_details).length > 0) {
-          setLatestApiError(latestDoc)
-        }
-      } catch {
-        console.log('No API errors found in recent documents')
-      }
     } catch (error) {
       console.error('Error fetching cost data from documents:', error)
       setApiUsages([])
@@ -237,49 +218,13 @@ export default function CostsPage() {
   return (
     <div>
       <div className="mb-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <DollarSign className="h-8 w-8" />
-              Cost Tracking
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Monitor API usage costs from document processing workflow
-            </p>
-          </div>
-          
-          {latestApiError && showApiError && (
-            <div className="ml-6 bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start">
-                  <AlertTriangle className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h3 className="text-red-800 font-medium">API Error Detected</h3>
-                    <p className="text-red-700 text-sm mt-1">
-                      Document: {latestApiError.filename || 'Unknown'}
-                    </p>
-                    <p className="text-red-600 text-xs mt-1">
-                      Status: {latestApiError.status || 'Unknown'}
-                    </p>
-                    <div className="mt-3 bg-red-100 rounded p-3 max-h-40 overflow-y-auto">
-                      <p className="text-xs font-mono text-red-800 whitespace-pre-wrap">
-                        {typeof latestApiError.api_details === 'object' 
-                          ? JSON.stringify(latestApiError.api_details, null, 2)
-                          : latestApiError.api_details}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setShowApiError(false)}
-                  className="ml-3 text-red-600 hover:text-red-800"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <DollarSign className="h-8 w-8" />
+          Cost Tracking
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Monitor API usage costs from document processing workflow
+        </p>
       </div>
 
       <div className="mb-6">
@@ -494,10 +439,18 @@ export default function CostsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Firecrawl Usage
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    API Logs
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {Array.from(new Set(apiUsages.map(usage => usage.id.split('-')[0]))).map(docIdPrefix => {
+                {Array.from(new Set(apiUsages.map(usage => usage.id.split('-')[0])))
+                  .filter(docIdPrefix => {
+                    const doc = documentsData.find(d => d.id.startsWith(docIdPrefix))
+                    return doc?.status === 'completed'
+                  })
+                  .map(docIdPrefix => {
                   // Find the full document ID that starts with this prefix
                   const fullDocId = documentsData.find(doc => doc.id.startsWith(docIdPrefix))?.id
                   const docId = fullDocId || docIdPrefix
@@ -516,6 +469,50 @@ export default function CostsPage() {
                   const documentName = actualDoc ? 
                     (actualDoc.filename || actualDoc.nombre_archivo || actualDoc.file_name || actualDoc.documento || 'Unknown Document') :
                     'Unknown Document'
+                  
+                  // Format API logs for display
+                  const getApiLogsDisplay = () => {
+                    if (!actualDoc?.api_details) return '-'
+                    
+                    const details = actualDoc.api_details as string | Record<string, unknown>
+                    
+                    // Handle string values
+                    if (typeof details === 'string') {
+                      // Color code based on content
+                      const isSuccess = details.toLowerCase().includes('success')
+                      const isError = details.toLowerCase().includes('error') || details.toLowerCase().includes('fail')
+                      
+                      return (
+                        <span className={`text-xs ${isSuccess ? 'text-green-600' : isError ? 'text-red-600' : 'text-gray-700'}`}>
+                          {details}
+                        </span>
+                      )
+                    }
+                    
+                    // Handle objects
+                    if (typeof details === 'object' && Object.keys(details).length > 0) {
+                      // Try to extract meaningful information
+                      const firstKey = Object.keys(details)[0]
+                      const firstValue = details[firstKey]
+                      
+                      if (typeof firstValue === 'string' && firstValue.length < 30) {
+                        return (
+                          <span className="text-xs text-gray-700">
+                            {firstValue}
+                          </span>
+                        )
+                      }
+                      
+                      // For complex objects, show a summary
+                      return (
+                        <span className="text-xs text-gray-600" title={JSON.stringify(details, null, 2)}>
+                          {Object.keys(details).length} entries
+                        </span>
+                      )
+                    }
+                    
+                    return '-'
+                  }
                   
                   return (
                     <tr key={docIdPrefix} className="hover:bg-gray-50">
@@ -540,6 +537,9 @@ export default function CostsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {firecrawlUsage || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getApiLogsDisplay()}
                       </td>
                     </tr>
                   )
