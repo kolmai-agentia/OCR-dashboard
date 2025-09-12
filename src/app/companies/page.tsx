@@ -133,7 +133,7 @@ export default function CompaniesPage() {
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
-        <div className="bg-white rounded-lg shadow flex flex-col">
+        <div className="bg-white rounded-lg shadow flex flex-col h-full">
           <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
             <h2 className="text-lg font-medium text-gray-900">
               Companies ({filteredCompanies.length})
@@ -186,7 +186,7 @@ export default function CompaniesPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow flex flex-col">
+        <div className="bg-white rounded-lg shadow flex flex-col h-full">
           {selectedCompany ? (
             <div className="flex flex-col h-full">
               <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
